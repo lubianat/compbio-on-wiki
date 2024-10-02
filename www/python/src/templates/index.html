@@ -5,7 +5,14 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Missing Computational Biology Articles by Language</title>
+
+  <!-- Tailwind CSS -->
   <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+
+  <!-- DataTables CSS -->
+  <link rel="stylesheet" href="https://cdn.datatables.net/1.11.5/css/jquery.dataTables.min.css">
+
+  <!-- Custom CSS -->
   <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
 
@@ -72,24 +79,44 @@
     {% if selected_language %}
     <div class="mt-8">
       <h2 class="text-2xl font-semibold text-center mb-6">Missing Articles in {{ selected_language }}:</h2>
-      <div class="space-y-8">
-        {% for importance, articles in missing_articles.items() %}
-        <div>
-          <h3 class="text-xl font-semibold mb-4">{{ importance.capitalize() }} Importance</h3>
-          <ul class="list-disc list-inside space-y-2">
-            {% for article in articles %}
-            <!-- Add a En Wiki and Wikidata link for each missing article -->
-            <li>{{ article.title }} - <a href="https://en.wikipedia.org/wiki/{{ article.title }}" target="_blank"
-                class="text-blue-600 hover:underline">English Wikipedia</a> / <a
-                href="https://www.wikidata.org/wiki/{{ article.qid }}" target="_blank"
-                class="text-blue-600 hover:underline">Wikidata</a></li>
-            {% else %}
-            <li class="text-gray-500">No missing articles found in this category.</li>
-            {% endfor %}
-          </ul>
+
+      {% for importance, articles in missing_articles.items() %}
+      <div class="mb-8">
+        <h3 class="text-xl font-semibold mb-4">{{ importance.capitalize() }} Importance</h3>
+
+        <!-- Data Table -->
+        <div class="overflow-x-auto">
+          <table id="articles-table-{{ importance }}" class="min-w-full bg-white border border-gray-300 display">
+            <thead>
+              <tr class="bg-gray-200">
+                <th class="py-2 px-4 border-b">Title</th>
+                <th class="py-2 px-4 border-b">English Wikipedia</th>
+                <th class="py-2 px-4 border-b">Wikidata</th>
+                <th class="py-2 px-4 border-b">Size (Bytes)</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for article in articles %}
+              <tr>
+                <td class="py-2 px-4 border-b">{{ article.title }}</td>
+                <td class="py-2 px-4 border-b"><a href="{{article.en_link}}" target="_blank"
+                    class="text-blue-600 hover:underline">English Wikipedia</a></td>
+                <td class="py-2 px-4 border-b"><a href="https://www.wikidata.org/wiki/{{ article.qid }}" target="_blank"
+                    class="text-blue-600 hover:underline">Wikidata</a></td>
+                <td class="py-2 px-4 border-b">{{ article.size }}</td>
+              </tr>
+              {% else %}
+              <tr>
+                <td colspan="4" class="py-2 px-4 text-center text-gray-500">No missing articles found in this category.
+                </td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
         </div>
-        {% endfor %}
       </div>
+      {% endfor %}
+
     </div>
     {% endif %}
 
@@ -104,6 +131,27 @@
           class="text-blue-600 hover:underline">Wikidata</a>.</p>
     </footer>
   </div>
+
+  <!-- jQuery -->
+  <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+  <!-- DataTables JS -->
+  <script src="https://cdn.datatables.net/1.11.5/js/jquery.dataTables.min.js"></script>
+
+  <!-- Initialize DataTables -->
+  <script>
+    $(document).ready(function () {
+      {% for article in missing_articles %}
+      $('#articles-table-{{ article }}').DataTable({
+        "paging": true,
+        "searching": true,
+        "ordering": true,
+        "order": [[3, "desc"]]  // Default sort by size (Bytes) column, descending
+      });
+      {% endfor %}
+    });
+  </script>
+
 </body>
 
 </html>
