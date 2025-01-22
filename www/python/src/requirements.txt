@@ -1,0 +1,3 @@
+Flask
+SPARQLWrapper
+pandas
